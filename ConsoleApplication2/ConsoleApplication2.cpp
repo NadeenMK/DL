@@ -2,157 +2,109 @@
 //
 
 #include <iostream>
-#include <algorithm>
-#include <unordered_map>
-#include<vector>
+#include <string>
+#include <cstring>
+#include <vector>
+#include <fstream>
+#include "Dlist.h"
 using namespace std;
 
-unordered_map<char, int> char_map;
-class studant {
-public:
-    string name;
-    int id;
-    int numOfgrades;
-    vector<int> grades;
-};
-template<typename any>
-class Dnode {
-private:
-    any data;
-    Dnode<any>* next;
-    Dnode<any>* prev;
-    template<typename any> friend class doublyList;
-};
-template<typename any>
-class doublyList {
-private:
-    Dnode<any>* header;
-    Dnode<any>* trailer;
-public:
-    doublyList() {
-        header = new Dnode<any>;
-        trailer = new Dnode<any>;
-        header->next = trailer;
-        trailer->prev = header;
-    }
-    void addInorder(const any& item) {
-        Dnode<any>* p = new Dnode<any>;
-        p->data = item;
-        p->next = header->next;
-        header->next->prev = p;
-        p->prev = header;
-        header->next = p;
-        //cout << "before Soring: " << p->data.name << endl;
-       if (p->next != trailer) {
-            sorting();
-       }
-    }
 
-    bool compare(string c1, string c2) {
-        for (int i = 0; i < min(c1.size(), c2.size()); i++) {
-            if (char_map[c1[i]] == char_map[c2[i]])
-                continue;
-            return char_map[c1[i]] < char_map[c2[i]];
+// takes array of char and character to look for then returns the index of it, else returns null
+int indexOfChar(char token[], char character) {
+    for (int i = 0; i < strlen(token); i++) {
+        if (token[i] == character) {
+            return i;
         }
-        return c1.size() < c2.size();
     }
+    return 0;
+}
+bool find(string s, string f) {
+    string m;
+    for (int i = 0, j = 0; i < s.length(), j < f.length(); i++,j++){
+        if (s[i] == f[j]) {
+            m += s[i];
+        }
+    }
+    if (m.length() == f.length()) {
+        if(m==f){
+         return true;
+        }
+    }
+    return false;
+}
 
-    void print() {
-        double sum = 0;
-        double avg;
-        Dnode<any>* p = header->next;
-        while (p != trailer) {
-            std:: cout << "name:" << p->data.name << " ";
-           std::cout << "ID:" << p->data.id<<" ";
-           std:: cout <<"numof grades:" << p->data.numOfgrades<<" ";
-           for (int i = 0; i < p->data.grades.size(); i++) {
-               sum += p->data.grades[i];
+void extractData(char token[], studant &s) {
+    string strToken(token);
+    int expNumber = 0;
+    string finalData; // represents the size of the exponent
+    int nameIndex = indexOfChar(token, ':');
+    if (find(strToken, "Name")){
+        for (int i = nameIndex + 1; i < strlen(token); i++) {
+            finalData += token[i];
+        }
+        s.name = finalData;
+    }else if (find(strToken, "ID")){
+        for (int i = nameIndex + 1; i < strlen(token); i++) {
+            finalData += token[i];
+        }
+        s.id = stoi(finalData);
+    }else if (find(strToken, "Grades")) {
+        vector<int> grades;
+        char* sPtr = token;
+        char* sPtr2;
+        string gradeFinalData;
+        int nameIndex = indexOfChar(sPtr, ':');
+        string newString;
+        for (int i = nameIndex + 1; i < strlen(sPtr); i++) {
+           if (sPtr[i] != '-') {
+               newString.push_back(sPtr[i]);
            }
-           avg = sum / p->data.numOfgrades;
-           cout << "avarge: " << avg << endl;
-            p = p->next;
-            sum = 0;
+           else {
+               grades.push_back(stoi(newString));
+               newString = "";
+           }
+            gradeFinalData += sPtr[i];
         }
+        grades.push_back(stoi(gradeFinalData));
+        s.grades = grades;
+        s.numOfgrades = grades.size();
     }
-
-    void sorting()
-    {
-        Dnode<any>* temp = header->next;
-
-        while (temp != trailer)
-        {
-            Dnode<any>* temp2 = temp->next;
-            while (temp2 != trailer)
-            {
-                    if (temp2->data.name < temp->data.name) // make comparison but im not sure wheteris logical or not 
-                    {
-                        string strtemp = "";
-                        int i,num;
-                        vector<int>g;
-                        strtemp = temp->data.name; // name change
-                        temp->data.name = temp2->data.name;
-                        temp2->data.name = strtemp;
-                        i = temp->data.id;
-                        temp->data.id = temp2->data.id;
-                        temp2->data.id =i;
-                        num = temp->data.numOfgrades;
-                        temp->data.numOfgrades = temp2->data.numOfgrades;
-                        temp2->data.numOfgrades = num;
-                        g = temp->data.grades;
-                        temp->data.grades = temp2->data.grades;
-                        temp2->data.grades = g;
-                        /* 
-                        temp->data.grades = temp2->data.grades;
-                        temp2->data.grades = g.*/
-                    }
-                    temp2 = temp2->next;
-            }
-            temp = temp->next;
-        }
-    }
-    void printReverse() {
-        Dnode<any>* p = trailer->prev;
-        while (p != header) {
-            std::cout << p->data.name << " ";
-            std::cout << p->data.id << " ";
-            std::cout << p->data.numOfgrades << " ";
-            //std::cout << p->data.grades << endl;
-            p = p->prev;
-        }
-    }
-};
-
+    
+}
 
 int main()
 {
     doublyList<studant>Dl;
-    studant s3;
-    s3.name = "yaraa";
-    s3.id = 250;
-    s3.numOfgrades = 2;
-    s3.grades.push_back(1);
-    s3.grades.push_back(2);
-    Dl.addInorder(s3);
-    
-    studant s;
-    s.name = "manar";
-    s.id = 100;
-    s.numOfgrades = 3;
-    s.grades.push_back(10);
-    s.grades.push_back(20);
-    s.grades.push_back(30);
-    Dl.addInorder(s);
-    studant s2;
-    s2.name = "zebra";
-    s2.id = 300;
-    s2.numOfgrades = 2;
-    s2.grades.push_back(4);
-    s2.grades.push_back(8);
+    ifstream myfile;
+    myfile.open("studant file.txt");
+    if (!myfile) {
+        cout << "File not found";
+        return 0;
+    }
+    while (myfile)
+    {
+        string line;
+        studant student;
+        getline(myfile, line);
+        char* sArr = new char[line.length() +1];
+        strcpy(sArr, line.c_str());
+        char* sPtr;
+        sPtr = strtok(sArr, ",");
+        string N;
+        int i, num;
+        vector<int>g;
+        while (sPtr != NULL)
+        {
+            string strToken(sPtr);
+            extractData(sPtr, student);
+            sPtr = strtok(NULL, ",");
+        }
 
-    Dl.addInorder(s2);
+        if (student.name != "" || student.numOfgrades != 0 || student.grades.size() != 0)
+            Dl.addInorder(student);
+    }
     Dl.print();
     Dl.printReverse();
-
-    
-    
+    return 0;
 }
